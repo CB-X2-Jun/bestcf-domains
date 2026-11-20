@@ -472,7 +472,8 @@ async function refreshCnNetwork({ resetResults = false, stopRuns = false } = {})
 			await finishBootLoading();
 		}
 		if (!allowed) showNetworkWarning();
-		return allowed;
+		// 红牌已禁用：无论如何都放行，不阻止用户继续操作（不可用时仅弹黄牌提示）。
+		return true;
 	} catch (error) {
 		if (bootLoading.active) await finishBootLoading();
 		throw error;
@@ -494,27 +495,32 @@ function buildNetworkWarningContext() {
 		info: state.network[family]
 	}));
 	const completed = entries.filter(({ info }) => info && info.status === "done");
-	const nonCn = completed.filter(({ info }) => !info.allowed);
 
-if (nonCn.length) {
+	// 红牌警告已禁用（保留调用结构，前端仍可正常渲染）。
+	// 原判定逻辑 completed.filter(({ info }) => !info.allowed) 不再生效，
+	// nonCn 恒为空数组，因此任何情况下都不会返回 non-cn，只会走下方黄牌提示。
+	const nonCn = [];
+
+	// 红牌分支保留（当前永不触发，便于日后恢复）
+	if (nonCn.length) {
+		return {
+			kind: "non-cn",
+			heading: "红牌警告",
+			title: "检测到当前网络出口不是 CN 直连",
+			message: "请确认浏览器当前网络是否经过了 代理、VPN 或 境外网络，\n在线优选仅有 CN 直连网络环境才可以实现！\n当前网络环境无法进行在线优选，可尝试使用「本地优选」。",
+			rows: nonCn,
+			details: completed
+		};
+	}
+
 	return {
-		kind: "non-cn",
-		heading: "红牌警告",
-		title: "检测到当前网络出口不是 CN 直连",
-		message: "请确认浏览器当前网络是否经过了 代理、VPN 或 境外网络，\n在线优选仅有 CN 直连网络环境才可以实现！\n当前网络环境无法进行在线优选，可尝试使用「本地优选」。",
-		rows: nonCn,
+		kind: "request-failed",
+		heading: "黄牌警告",
+		title: "优选域名请求失败",
+		message: "当前网络环境无法进行在线优选，但可尝试使用「本地优选」。\n请自行检查网络环境，确保优选域名可访问。",
+		rows: entries,
 		details: completed
 	};
-}
-
-return {
-	kind: "request-failed",
-	heading: "黄牌警告",
-	title: "优选域名请求失败",
-	message: "当前网络环境无法进行在线优选，但可尝试使用「本地优选」。\n请自行检查网络环境，确保优选域名可访问。",
-	rows: entries,
-	details: completed
-};
 }
 
 function renderNetworkWarning(context) {
@@ -913,9 +919,8 @@ function availableFamilies() {
 }
 
 function updateActionAvailability() {
-	const hasService = availableFamilies().length > 0;
-	const latencyActive = Boolean(state.latencyRun);
-	els.latencyBtn.disabled = state.networkChecking || (!hasService && !latencyActive);
+	// 红牌已禁用：不再因“无可用服务”禁用按钮，避免阻止用户尝试。
+	els.latencyBtn.disabled = state.networkChecking;
 }
 
 async function importCfDomains() {
