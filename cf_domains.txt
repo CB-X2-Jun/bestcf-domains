@@ -1,5 +1,6 @@
 01-cctv.com
 01-qq.com
+0a.is-a.dev
 101yaoye.com
 16k.club
 224322.xyz
@@ -88,6 +89,7 @@ cfplus.255520.xyz
 chrono24.com
 clist.by
 clickhouse.com
+cloudfish.com
 cloudflare-ip.mofashi.ltd
 cloudflare.idc.rocks
 cloudflare.tv
@@ -206,6 +208,7 @@ jquery.com
 js.org
 kali.download
 kaspa.stream
+kattis.com
 kernelsu.com
 kick.com
 kickstarter.com
@@ -248,6 +251,7 @@ nist.gov
 noc.one
 nodejs.org
 nodeloc.cc
+npm.js.org
 ooo.0o0.ooo
 op.chinwa.eu.cc
 openai.com
